@@ -37,6 +37,14 @@ public class BaseResponse<T> {
             .isSuccess(false)
             .build();
 
+    public static <T> BaseResponse<T> of(final T response) {
+        return BaseResponse.<T>builder()
+                .httpStatus(HttpStatus.OK)
+                .isSuccess(true)
+                .response(response)
+                .build();
+    }
+
     public static <T> BaseResponse<T> of(HttpStatus status, boolean isSuccess, String message, final T response) {
         return BaseResponse.<T>builder()
                 .httpStatus(status)
