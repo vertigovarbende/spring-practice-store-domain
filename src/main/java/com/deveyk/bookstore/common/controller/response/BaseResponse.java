@@ -1,5 +1,6 @@
 package com.deveyk.bookstore.common.controller.response;
 
+import com.deveyk.bookstore.common.util.BsRandomUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +14,8 @@ public class BaseResponse<T> {
 
     @Builder.Default
     private LocalDateTime time = LocalDateTime.now();
+    @Builder.Default
+    private String code = BsRandomUtil.generateUUID();
     private HttpStatus httpStatus;
     private Boolean isSuccess;
     private String message;
