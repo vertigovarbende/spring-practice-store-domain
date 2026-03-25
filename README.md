@@ -1,1 +1,1 @@
-### book-seller
+### book-store-domain
