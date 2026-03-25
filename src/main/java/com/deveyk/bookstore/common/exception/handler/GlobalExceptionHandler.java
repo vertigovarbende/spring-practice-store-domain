@@ -80,7 +80,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(BsNotFoundException.class)
-    public ResponseEntity<Object> handleIllegalArgumentException(final BsNotFoundException ex,
+    public ResponseEntity<Object> handleBsNotFoundException(final BsNotFoundException ex,
                                                                  HttpServletRequest request) {
         log.error(ex.getMessage(), ex);
         ErrorResponse response = ErrorResponse.builder()
