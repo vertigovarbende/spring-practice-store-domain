@@ -18,6 +18,7 @@ public class BaseResponse<T> {
     private String code = BsRandomUtil.generateUUID();
     private HttpStatus httpStatus;
     private Boolean isSuccess;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T response;

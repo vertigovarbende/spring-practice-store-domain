@@ -17,11 +17,7 @@ import java.util.Map;
 public class ErrorResponse {
 
     @Builder.Default
-    private LocalDateTime time = LocalDateTime.now();
-    @Builder.Default
     private String code = BsRandomUtil.generateUUID();
-    @Builder.Default
-    private final Boolean isSuccess = false;
     private String header;
     private String title;
     private String path;
@@ -47,8 +43,6 @@ public class ErrorResponse {
         private final String name;
 
     }
-
-
 
 
 }
