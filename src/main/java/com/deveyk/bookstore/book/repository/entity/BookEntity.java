@@ -6,8 +6,9 @@ import com.deveyk.bookstore.book.model.enums.BookStatus;
 import com.deveyk.bookstore.common.repository.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
@@ -17,6 +18,12 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@NamedEntityGraph(
+        name = "Book.withAuthors",
+        attributeNodes = {
+                @NamedAttributeNode("authors")
+        }
+) // Should I use JOIN FETCH?
 public class BookEntity extends BaseEntity {
 
     @Id
@@ -44,11 +51,12 @@ public class BookEntity extends BaseEntity {
     @Column(name = "PUBLISHER", length = 200)
     private String publisher;
 
-    @Column(name = "PUBLICATION_DATE")
-    private LocalDateTime publicationDate;
+    @Column(name = "PUBLICATION_DATE", nullable = true)
+    @DateTimeFormat(pattern = "YYYY-MM-DD")
+    private LocalDate publicationDate;
 
     @Column(name = "EDITION")
-    private Integer edition;
+    private String edition;
 
     @Column(name = "LANGUAGE", length = 50)
     private String language;
@@ -58,7 +66,7 @@ public class BookEntity extends BaseEntity {
 
     @ElementCollection(targetClass = BookGenre.class, fetch = FetchType.LAZY)
     @CollectionTable(
-            name = "BOOK_GENRES",
+            name = "BS_BOOK_GENRES",
             joinColumns = @JoinColumn(name = "BOOK_ID")
     )
     @Enumerated(EnumType.STRING)
