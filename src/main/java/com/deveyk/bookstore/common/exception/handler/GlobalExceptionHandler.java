@@ -2,6 +2,9 @@ package com.deveyk.bookstore.common.exception.handler;
 
 import com.deveyk.bookstore.common.controller.response.BaseResponse;
 import com.deveyk.bookstore.common.controller.response.ErrorResponse;
+import com.deveyk.bookstore.common.exception.BsAlreadyExistsException;
+import com.deveyk.bookstore.common.exception.BsDuplicateException;
+import com.deveyk.bookstore.common.exception.BsNotEligibleException;
 import com.deveyk.bookstore.common.exception.BsNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -97,6 +100,61 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 response));
     }
 
+    @ExceptionHandler(BsNotEligibleException.class)
+    public ResponseEntity<Object> handleBsNotEligibleException(final BsNotEligibleException ex,
+                                                                 HttpServletRequest request) {
+        log.error(ex.getMessage(), ex);
+        ErrorResponse response = ErrorResponse.builder()
+                .header(ErrorResponse.Header.NOT_EXISTS_ERROR.name())
+                .title("Not Eligible")
+                .path(request.getRequestURI())
+                .build();
+        response.addProperty("traceId", MDC.get("traceId"));
+        response.addProperty("method", request.getMethod());
 
+        return ResponseEntity.badRequest().body(BaseResponse.of(
+                HttpStatus.NOT_FOUND,
+                false,
+                ex.getMessage(),
+                response));
+    }
+
+    @ExceptionHandler(BsDuplicateException.class)
+    public ResponseEntity<Object> handleBsDuplicateException(final BsDuplicateException ex,
+                                                                 HttpServletRequest request) {
+        log.error(ex.getMessage(), ex);
+        ErrorResponse response = ErrorResponse.builder()
+                .header(ErrorResponse.Header.CONFLICT_ERROR.name())
+                .title("Duplicate Entry")
+                .path(request.getRequestURI())
+                .build();
+        response.addProperty("traceId", MDC.get("traceId"));
+        response.addProperty("method", request.getMethod());
+
+        return ResponseEntity.badRequest().body(BaseResponse.of(
+                HttpStatus.CONFLICT,
+                false,
+                ex.getMessage(),
+                response));
+    }
+
+    @ExceptionHandler(BsAlreadyExistsException.class)
+    public ResponseEntity<Object> handleBsAlreadyExistsException(final BsAlreadyExistsException ex,
+                                                                 HttpServletRequest request) {
+        log.error(ex.getMessage(), ex);
+        ErrorResponse response = ErrorResponse.builder()
+                .header(ErrorResponse.Header.CONFLICT_ERROR.name())
+                .title("Already Exists")
+                .path(request.getRequestURI())
+                .build();
+        response.addProperty("traceId", MDC.get("traceId"));
+        response.addProperty("method", request.getMethod());
+
+        return ResponseEntity.badRequest().body(BaseResponse.of(
+                HttpStatus.CONFLICT,
+                false,
+                ex.getMessage(),
+                response));
+    }
 
 }
