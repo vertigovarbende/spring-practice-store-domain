@@ -16,9 +16,9 @@ public class BsPage<T> {
 
     private int pageSize;
 
-    private int totalPages;
+    private int totalPageCount;
 
-    private long totalElements;
+    private long totalElementCount;
 
     private Sorting sortedBy;
 
@@ -35,8 +35,8 @@ public class BsPage<T> {
             return this
                     .pageNumber(page.getNumber() + 1)
                     .pageSize(page.getContent().size())
-                    .totalPages(page.getTotalPages())
-                    .totalElements(page.getTotalElements())
+                    .totalPageCount(page.getTotalPages())
+                    .totalElementCount(page.getTotalElements())
                     .sortedBy(Sorting.toSort(page.getSort()));
 
         }
