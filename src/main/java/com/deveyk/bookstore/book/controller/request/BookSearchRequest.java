@@ -1,5 +1,6 @@
 package com.deveyk.bookstore.book.controller.request;
 
+import com.deveyk.bookstore.book.model.enums.BookStatus;
 import com.deveyk.bookstore.common.controller.request.BsPaginationRequest;
 import com.deveyk.bookstore.common.model.Filtering;
 import jakarta.validation.Valid;
@@ -33,6 +34,8 @@ public class BookSearchRequest extends BsPaginationRequest {
         private String searchTerm;
         @NotBlank(message = "Search type cannot be blank")
         private String searchType;
+
+        private BookStatus status;
     }
 
 
