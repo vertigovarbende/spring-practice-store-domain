@@ -18,12 +18,6 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@NamedEntityGraph(
-        name = "Book.withAuthors",
-        attributeNodes = {
-                @NamedAttributeNode("authors")
-        }
-) // Should I use JOIN FETCH?
 public class BookEntity extends BaseEntity {
 
     @Id
