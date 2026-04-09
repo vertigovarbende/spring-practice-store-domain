@@ -9,6 +9,7 @@ import com.deveyk.bookstore.author.service.domain.Author;
 import com.deveyk.bookstore.book.controller.request.BookAddGenreRequest;
 import com.deveyk.bookstore.book.exception.BookNotFoundException;
 import com.deveyk.bookstore.book.model.enums.BookGenre;
+import com.deveyk.bookstore.book.model.enums.BookSearchType;
 import com.deveyk.bookstore.book.model.mapper.AddAuthorToBookCommandToDomainMapper;
 import com.deveyk.bookstore.book.model.mapper.BookDomainToEntityMapper;
 import com.deveyk.bookstore.book.model.mapper.BookEntityToDomainMapper;
@@ -18,6 +19,7 @@ import com.deveyk.bookstore.book.service.IBookService;
 import com.deveyk.bookstore.book.service.command.AddAuthorToBookCommand;
 import com.deveyk.bookstore.book.service.domain.Book;
 import com.deveyk.bookstore.book.service.command.BookSearchCommand;
+import com.deveyk.bookstore.book.service.strategy.SearchStrategy;
 import com.deveyk.bookstore.book.service.strategy.context.BookSearchContext;
 import com.deveyk.bookstore.common.model.BsPage;
 import lombok.RequiredArgsConstructor;
@@ -47,14 +49,20 @@ public class BookService implements IBookService {
     @Override
     @Transactional(readOnly = true)
     public BsPage<Book> search(BookSearchCommand command) {
-        Page<Book> bookPage = bookSearchContext.executeSearch(command);
+        if (command == null || command.getFilter() == null) {
+            return BsPage.<Book>builder()
+                    .content(List.of())
+                    .build();
+        }
 
-        List<Book> books = bookPage.getContent();
+        BookSearchType type = command.getFilter().getSearchType();
+        SearchStrategy strategy = bookSearchContext.getStrategy(type);
+
+        Page<Book> bookPage = strategy.search(command);
 
         return BsPage.<Book>builder()
-                .content(books)
+                .content(bookPage.getContent())
                 .page(bookPage)
-                .sortedBy(command.getSorting())
                 .filteredBy(command.getFilter())
                 .build();
     }
