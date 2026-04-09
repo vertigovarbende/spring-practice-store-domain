@@ -13,47 +13,30 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class BookSearchContext {
 
-    private final List<SearchStrategy> searchStrategies;
-    private final Map<BookSearchType, SearchStrategy> strategyMap = new HashMap<>();
+    private final List<SearchStrategy> strategies;
+    private Map<BookSearchType, SearchStrategy> strategyMap;
 
     @PostConstruct
     public void init() {
-        for (SearchStrategy strategy : searchStrategies) {
-            strategyMap.put(strategy.getStrategyName(), strategy);
-        }
+        this.strategyMap = strategies.stream()
+                .collect(Collectors.toMap(
+                        SearchStrategy::getStrategyType,
+                        Function.identity()
+                ));
     }
 
-    // refactor strategy retrieval to use map lookup
-    public Page<Book> executeSearch(BookSearchCommand command) {
-        if (command == null || command.getFilter() == null) {
-            throw new StrategyNotFoundException("Search command or filter cannot be null");
-        }
-
-        BookSearchType searchType = BookSearchType.from(command.getFilter().getSearchType());
-        SearchStrategy strategy = getStrategy(searchType);
+    public SearchStrategy getStrategy(BookSearchType type) {
+        SearchStrategy strategy = strategyMap.get(type);
 
         if (strategy == null) {
-            throw new StrategyNotFoundException("Search strategy not found for type: " + searchType);
-        }
-
-        return strategy.search(command);
-    }
-
-
-    public SearchStrategy getStrategy(BookSearchType strategyName) {
-        if (strategyName == null) {
-            throw new StrategyNotFoundException("Search type cannot be null");
-        }
-
-        SearchStrategy strategy = strategyMap.get(strategyName);
-
-        if (strategy == null) {
-            throw new StrategyNotFoundException("Search strategy not found for type: " + strategyName);
+            throw new StrategyNotFoundException("Strategy not found: " + type);
         }
 
         return strategy;
