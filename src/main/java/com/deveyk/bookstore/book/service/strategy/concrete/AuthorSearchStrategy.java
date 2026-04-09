@@ -1,43 +1,42 @@
 package com.deveyk.bookstore.book.service.strategy.concrete;
 
+import com.deveyk.bookstore.author.repository.entity.AuthorEntity;
 import com.deveyk.bookstore.book.model.enums.BookSearchType;
 import com.deveyk.bookstore.book.model.mapper.BookEntityToDomainMapper;
 import com.deveyk.bookstore.book.repository.BookRepository;
-import com.deveyk.bookstore.book.service.domain.Book;
-import com.deveyk.bookstore.book.service.strategy.SearchStrategy;
-import com.deveyk.bookstore.book.service.command.BookSearchCommand;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.deveyk.bookstore.book.repository.entity.BookEntity;
+import com.deveyk.bookstore.book.service.strategy.AbstractBookSearchStrategy;
+import jakarta.persistence.criteria.Join;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-public class AuthorSearchStrategy implements SearchStrategy {
+public class AuthorSearchStrategy extends AbstractBookSearchStrategy {
 
-    private final BookRepository bookRepository;
-    private static final BookEntityToDomainMapper BOOK_ENTITY_TO_DOMAIN_MAPPER = BookEntityToDomainMapper.INSTANCE;
+    public AuthorSearchStrategy(BookRepository repository, BookEntityToDomainMapper mapper) {
+        super(repository, mapper);
 
-    @Override
-    public Page<Book> search(BookSearchCommand command) {
-        if (command == null || command.getFilter() == null) {
-            return Page.empty(command != null ? command.toPageable() : Pageable.unpaged());
-        }
-
-        String searchTerm = command.getFilter().getSearchTerm();
-
-        if (searchTerm == null || searchTerm.isBlank()) {
-            return Page.empty(command.toPageable());
-        }
-
-        return bookRepository
-                .searchByAuthorName(searchTerm.trim(), command.toPageable())
-                .map(BOOK_ENTITY_TO_DOMAIN_MAPPER::map);
     }
 
     @Override
-    public BookSearchType getStrategyName() {
+    public BookSearchType getStrategyType() {
         return BookSearchType.AUTHOR;
+    }
+
+    @Override
+    protected Specification<BookEntity> buildSpecification(String term) {
+        return (root, query, cb) -> {
+            query.distinct(true);
+
+            Join<BookEntity, AuthorEntity> author = root.join("authors");
+
+            return cb.or(
+                    cb.like(cb.lower(cb.coalesce(author.get("name").get("firstName"), "")), "%" + term + "%"),
+                    cb.like(cb.lower(cb.coalesce(author.get("name").get("middleName"), "")), "%" + term + "%"),
+                    cb.like(cb.lower(cb.coalesce(author.get("name").get("lastName"), "")), "%" + term + "%"),
+                    cb.like(cb.lower(cb.coalesce(author.get("name").get("penName"), "")), "%" + term + "%")
+            );
+        };
     }
 
 }
