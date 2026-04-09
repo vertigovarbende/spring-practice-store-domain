@@ -9,6 +9,6 @@ public interface SearchStrategy {
 
     Page<Book> search(BookSearchCommand command);
 
-    BookSearchType getStrategyName();
+    BookSearchType getStrategyType();
 
 }
