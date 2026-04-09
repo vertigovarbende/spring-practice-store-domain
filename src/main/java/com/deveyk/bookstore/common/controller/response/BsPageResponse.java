@@ -33,13 +33,13 @@ public class BsPageResponse<R> {
         }
 
         public <Z> BsPageResponseBuilder<R> page(final BsPage<Z> page) {
-            return BsPageResponse.<R>builder()
-                    .pageNumber(page.getPageNumber())
-                    .pageSize(page.getPageSize())
-                    .totalPageCount(page.getTotalPages())
-                    .totalElementCount(page.getTotalElements())
-                    .sortedBy(page.getSortedBy())
-                    .filteredBy(page.getFilteredBy());
+            this.pageNumber = page.getPageNumber();
+            this.pageSize = page.getPageSize();
+            this.totalPageCount = page.getTotalPageCount();
+            this.totalElementCount = page.getTotalElementCount();
+            this.sortedBy = page.getSortedBy();
+            this.filteredBy = page.getFilteredBy();
+            return this;
         }
 
     }
