@@ -6,7 +6,7 @@ import com.deveyk.bookstore.common.model.mapper.BaseMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface BookEntityToDomainMapper extends BaseMapper<BookEntity, Book> {
 
     BookEntityToDomainMapper INSTANCE = Mappers.getMapper(BookEntityToDomainMapper.class);
