@@ -1,4 +1,4 @@
-package com.deveyk.bookstore.book.exception;
+package com.deveyk.bookstore.author.exception;
 
 import com.deveyk.bookstore.common.exception.BsNotEligibleException;
 

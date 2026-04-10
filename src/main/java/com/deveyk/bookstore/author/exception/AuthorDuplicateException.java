@@ -1,14 +1,14 @@
-package com.deveyk.bookstore.book.exception;
+package com.deveyk.bookstore.author.exception;
 
 import com.deveyk.bookstore.common.exception.BsDuplicateException;
 
-public class DuplicateAuthorException extends BsDuplicateException {
+public class AuthorDuplicateException extends BsDuplicateException {
 
-    public DuplicateAuthorException(String message) {
+    public AuthorDuplicateException(String message) {
         super(message);
     }
 
-    public DuplicateAuthorException(String message, Throwable cause) {
+    public AuthorDuplicateException(String message, Throwable cause) {
         super(message, cause);
     }
 
