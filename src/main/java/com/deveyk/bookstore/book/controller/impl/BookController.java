@@ -1,20 +1,24 @@
 package com.deveyk.bookstore.book.controller.impl;
 
 import com.deveyk.bookstore.book.controller.mapper.BookAddAuthorRequestToAddAuthorToBookCommandMapper;
+import com.deveyk.bookstore.book.controller.mapper.BookCreateRequestToCreateCommandMapper;
 import com.deveyk.bookstore.book.controller.mapper.BookSearchRequestToBookSearchCommandMapper;
 import com.deveyk.bookstore.book.controller.mapper.BookToBookResponseMapper;
 import com.deveyk.bookstore.book.controller.request.BookAddAuthorRequest;
 import com.deveyk.bookstore.book.controller.request.BookAddGenreRequest;
+import com.deveyk.bookstore.book.controller.request.BookCreateRequest;
 import com.deveyk.bookstore.book.controller.request.BookSearchRequest;
 import com.deveyk.bookstore.book.controller.response.BookSearchResponse;
 import com.deveyk.bookstore.book.service.IBookService;
 import com.deveyk.bookstore.book.service.command.AddAuthorToBookCommand;
+import com.deveyk.bookstore.book.service.command.BookCreateCommand;
 import com.deveyk.bookstore.book.service.domain.Book;
 import com.deveyk.bookstore.common.controller.response.BaseResponse;
 import com.deveyk.bookstore.common.controller.response.BsPageResponse;
 import com.deveyk.bookstore.common.model.BsPage;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +33,7 @@ public class BookController {
     private static final BookToBookResponseMapper BOOK_TO_BOOK_RESPONSE_MAPPER = BookToBookResponseMapper.INSTANCE;
     private static final BookAddAuthorRequestToAddAuthorToBookCommandMapper BOOK_ADD_AUTHOR_REQUEST_TO_ADD_AUTHOR_TO_BOOK_COMMAND_MAPPER = BookAddAuthorRequestToAddAuthorToBookCommandMapper.INSTANCE;
     private static final BookSearchRequestToBookSearchCommandMapper BOOK_SEARCH_REQUEST_TO_BOOK_SEARCH_COMMAND_MAPPER = BookSearchRequestToBookSearchCommandMapper.INSTANCE;
+    private static final BookCreateRequestToCreateCommandMapper BOOK_CREATE_REQUEST_TO_CREATE_COMMAND_MAPPER = BookCreateRequestToCreateCommandMapper.INSTANCE;
 
     // GET - /api/v1/books/search - search() - first try for search strategy
     // refactor dto - request and response
@@ -45,7 +50,15 @@ public class BookController {
                         .toList())
                 .page(bookPage)
                 .build();
-        return BaseResponse.of(pageResponse);
+        return BaseResponse.successOf(pageResponse);
+    }
+
+    // POST - /api/v1/books - create()
+    @PostMapping
+    public BaseResponse<Void> create(@Valid @RequestBody BookCreateRequest request) {
+        BookCreateCommand command = BOOK_CREATE_REQUEST_TO_CREATE_COMMAND_MAPPER.map(request);
+        bookService.create(command);
+        return BaseResponse.successOf(HttpStatus.CREATED, "Book created successfully");
     }
 
     // POST - /api/v1/books/{bookId}/authors - revised implementation to add an author to a book and verify functionality in Book domain
@@ -61,6 +74,7 @@ public class BookController {
 
     // DELETE - /api/v1/books/{bookId}/authors/{authorId} - revised implementation to remove an author to a book and verify functionality in Book domain
     // create dto - request
+    // should be BookRemoveAuthorRequest? and should i take authorId from the request body?
     @DeleteMapping("/{bookId}/authors/{authorId}")
     public BaseResponse<Void> removeAuthorFromBook(
             @PathVariable String bookId,
