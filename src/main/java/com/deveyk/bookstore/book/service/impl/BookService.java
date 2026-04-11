@@ -11,12 +11,14 @@ import com.deveyk.bookstore.book.exception.BookNotFoundException;
 import com.deveyk.bookstore.book.model.enums.BookGenre;
 import com.deveyk.bookstore.book.model.enums.BookSearchType;
 import com.deveyk.bookstore.book.model.mapper.AddAuthorToBookCommandToDomainMapper;
+import com.deveyk.bookstore.book.model.mapper.BookCreateCommandToDomainMapper;
 import com.deveyk.bookstore.book.model.mapper.BookDomainToEntityMapper;
 import com.deveyk.bookstore.book.model.mapper.BookEntityToDomainMapper;
 import com.deveyk.bookstore.book.repository.BookRepository;
 import com.deveyk.bookstore.book.repository.entity.BookEntity;
 import com.deveyk.bookstore.book.service.IBookService;
 import com.deveyk.bookstore.book.service.command.AddAuthorToBookCommand;
+import com.deveyk.bookstore.book.service.command.BookCreateCommand;
 import com.deveyk.bookstore.book.service.domain.Book;
 import com.deveyk.bookstore.book.service.command.BookSearchCommand;
 import com.deveyk.bookstore.book.service.strategy.SearchStrategy;
@@ -28,6 +30,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * i am gonna refactor all methods in this class. i am just trying some stuff
@@ -42,6 +48,7 @@ public class BookService implements IBookService {
     private final BookSearchContext bookSearchContext;
 
     private static final AddAuthorToBookCommandToDomainMapper ADD_AUTHOR_TO_BOOK_COMMAND_TO_DOMAIN_MAPPER = AddAuthorToBookCommandToDomainMapper.INSTANCE;
+    private static final BookCreateCommandToDomainMapper BOOK_CREATE_COMMAND_TO_DOMAIN_MAPPER = BookCreateCommandToDomainMapper.INSTANCE;
     private static final BookEntityToDomainMapper BOOK_ENTITY_TO_DOMAIN_MAPPER = BookEntityToDomainMapper.INSTANCE;
     private static final BookDomainToEntityMapper BOOK_DOMAIN_TO_ENTITY_MAPPER = BookDomainToEntityMapper.INSTANCE;
     private static final AuthorEntityToDomainMapper AUTHOR_ENTITY_TO_DOMAIN_MAPPER = AuthorEntityToDomainMapper.INSTANCE;
@@ -65,6 +72,34 @@ public class BookService implements IBookService {
                 .page(bookPage)
                 .filteredBy(command.getFilter())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void create(BookCreateCommand command) {
+        Objects.requireNonNull(command, "BookCreateCommand cannot be null");
+        Book book = BOOK_CREATE_COMMAND_TO_DOMAIN_MAPPER.map(command);
+        if (command.authorIds() != null && !command.authorIds().isEmpty()) {
+            /*
+            Set<Author> authors = command.authorIds().stream()
+                    .map(authorsId -> getAuthorEntity(authorsId.toString()))
+                    .map(AUTHOR_ENTITY_TO_DOMAIN_MAPPER::map)
+                    .collect(Collectors.toSet());
+             */
+            Set<Author> authors2 = this.getAuthorEntity(command.authorIds()).stream()
+                            .map(AUTHOR_ENTITY_TO_DOMAIN_MAPPER::map)
+                            .collect(Collectors.toSet());
+            book.addAuthor(authors2);
+        }
+        if (command.genres() != null && !command.genres().isEmpty()) {
+            Set<BookGenre> genres = command.genres().stream()
+                    .map(BookGenre::from)
+                    .collect(Collectors.toSet());
+            book.addGenre(genres);
+        }
+
+        BookEntity bookEntity = BOOK_DOMAIN_TO_ENTITY_MAPPER.map(book);
+        bookRepository.save(bookEntity);
     }
 
 
@@ -156,5 +191,17 @@ public class BookService implements IBookService {
                 .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + authorId));
     }
 
+    private Set<AuthorEntity> getAuthorEntity(Set<UUID> authorIds) {
+        List<AuthorEntity> authorEntities = authorRepository.findAllById(authorIds.stream()
+                .map(UUID::toString)
+                .collect(Collectors.toList()));
+
+        if (authorEntities.size() != authorIds.size()) {
+            throw new AuthorNotFoundException("One or more authors were not found");
+        }
+
+        return authorEntities.stream()
+                .collect(Collectors.toSet());
+    }
 
 }
