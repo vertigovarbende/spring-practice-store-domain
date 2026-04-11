@@ -40,7 +40,7 @@ public class Book {
 
     /*
         - we can't add the same author twice
-        - we can't add the author which INACTIVE, SUSPEND or sth - look at AuthorStatus
+        - we can't add the author which is INACTIVE, SUSPENDED or any other status - look at AuthorStatus
      */
     public void addAuthor(Author author) {
         Objects.requireNonNull(author, "author cannot be null");
@@ -49,6 +49,11 @@ public class Book {
         validateDuplicateAuthor(author);
 
         this.authors.add(author);
+    }
+
+    public void addAuthor(Set<Author> authors) {
+        Objects.requireNonNull(authors, "authors cannot be null");
+        authors.forEach(this::addAuthor);
     }
 
     private void validateAuthorEligibility(Author author) {
@@ -93,6 +98,11 @@ public class Book {
                     "Book already contains genre: " + genre.name()
             );
         }
+    }
+
+    public void addGenre(Set<BookGenre> genres) {
+        Objects.requireNonNull(genres, "Genres cannot be null");
+        genres.forEach(this::addGenre);
     }
 
     public void removeGenre(BookGenre genre) {
