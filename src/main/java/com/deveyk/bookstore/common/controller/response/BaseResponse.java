@@ -41,7 +41,7 @@ public class BaseResponse<T> {
             .isSuccess(false)
             .build();
 
-    public static <T> BaseResponse<T> of(final T response) {
+    public static <T> BaseResponse<T> successOf(final T response) {
         return BaseResponse.<T>builder()
                 .httpStatus(HttpStatus.OK)
                 .isSuccess(true)
@@ -49,10 +49,18 @@ public class BaseResponse<T> {
                 .build();
     }
 
+    public static <T> BaseResponse<T> successOf(HttpStatus status, String message) {
+        return BaseResponse.<T>builder()
+                .httpStatus(status)
+                .isSuccess(true)
+                .message(message)
+                .build();
+    }
+
     public static <T> BaseResponse<T> of(HttpStatus status, boolean isSuccess, String message, final T response) {
         return BaseResponse.<T>builder()
                 .httpStatus(status)
-                .isSuccess(isSuccess)
+                .isSuccess(true)
                 .message(message)
                 .response(response)
                 .build();
