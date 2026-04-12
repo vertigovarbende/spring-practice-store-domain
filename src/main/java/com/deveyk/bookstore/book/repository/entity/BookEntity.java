@@ -34,7 +34,7 @@ public class BookEntity extends BaseEntity {
     @Column(name = "ISBN_13", length = 13, unique = true)
     private String isbn13;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinTable(
             name = "BS_BOOK_AUTHORS",
             joinColumns = @JoinColumn(name = "BOOK_ID"),
