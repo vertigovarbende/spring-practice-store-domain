@@ -1,6 +1,4 @@
-package com.deveyk.bookstore.book.exception;
-
-import com.deveyk.bookstore.common.exception.BsNotFoundException;
+package com.deveyk.bookstore.common.exception;
 
 public class StrategyNotFoundException extends BsNotFoundException {
 
