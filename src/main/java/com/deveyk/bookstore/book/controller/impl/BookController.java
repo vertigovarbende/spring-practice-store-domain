@@ -25,20 +25,14 @@ public class BookController {
     private final IBookService bookService;
 
     private static final BookToBookResponseMapper BOOK_TO_BOOK_RESPONSE_MAPPER = BookToBookResponseMapper.INSTANCE;
-    private static final BookAddAuthorRequestToBookAddAuthorCommandMapper BOOK_ADD_AUTHOR_REQUEST_TO_ADD_AUTHOR_TO_BOOK_COMMAND_MAPPER = BookAddAuthorRequestToBookAddAuthorCommandMapper.INSTANCE;
-    private static final BookRemoveAuthorRequestToBookRemoveAuthorCommandMapper BOOK_REMOVE_AUTHOR_REQUEST_TO_BOOK_REMOVE_AUTHOR_COMMAND_MAPPER = BookRemoveAuthorRequestToBookRemoveAuthorCommandMapper.INSTANCE;
-    private static final BookAddGenreRequestToBookAddGenreCommandMapper BOOK_ADD_GENRE_REQUEST_TO_BOOK_ADD_GENRE_COMMAND_MAPPER = BookAddGenreRequestToBookAddGenreCommandMapper.INSTANCE;
-    private static final BookRemoveGenreRequestToBookRemoveGenreCommandMapper BOOK_REMOVE_GENRE_REQUEST_TO_BOOK_REMOVE_GENRE_COMMAND_MAPPER = BookRemoveGenreRequestToBookRemoveGenreCommandMapper.INSTANCE;
-    private static final BookSearchRequestToBookSearchCommandMapper BOOK_SEARCH_REQUEST_TO_BOOK_SEARCH_COMMAND_MAPPER = BookSearchRequestToBookSearchCommandMapper.INSTANCE;
-    private static final BookCreateRequestToCreateCommandMapper BOOK_CREATE_REQUEST_TO_CREATE_COMMAND_MAPPER = BookCreateRequestToCreateCommandMapper.INSTANCE;
-    private static final BookChangeStatusRequestToBookChangeStatusCommandMapper BOOK_CHANGE_STATUS_REQUEST_TO_BOOK_CHANGE_STATUS_COMMAND_MAPPER = BookChangeStatusRequestToBookChangeStatusCommandMapper.INSTANCE;
+    private final BookRequestMapper bookRequestMapper;
 
     // GET - /api/v1/books/search - search() - first try for search strategy
     // refactor dto - request and response
     @GetMapping("/search")
     public BaseResponse<BsPageResponse<BookSearchResponse>> search(@Valid @RequestBody BookSearchRequest request) {
         BsPage<Book> bookPage = bookService.search(
-                BOOK_SEARCH_REQUEST_TO_BOOK_SEARCH_COMMAND_MAPPER.map(request)
+                bookRequestMapper.toSearchCommand(request)
         );
 
         BsPageResponse<BookSearchResponse> pageResponse = BsPageResponse.<BookSearchResponse>builder()
@@ -54,14 +48,14 @@ public class BookController {
     // POST - /api/v1/books - create()
     @PostMapping
     public BaseResponse<Void> create(@Valid @RequestBody BookCreateRequest request) {
-        BookCreateCommand command = BOOK_CREATE_REQUEST_TO_CREATE_COMMAND_MAPPER.map(request);
+        BookCreateCommand command = bookRequestMapper.toCreateCommand(request);
         bookService.create(command);
         return BaseResponse.successOf(HttpStatus.CREATED, "Book created successfully");
     }
 
     // DELETE - /api/v1/books/{bookId}
     @DeleteMapping("/{bookId}")
-    public BaseResponse<Void> delete(@PathVariable String bookId) {
+    public BaseResponse<Void> delete(@PathVariable @NotBlank(message = "Book id cannot be blank") String bookId) {
         bookService.delete(bookId);
         return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Book deleted successfully");
     }
@@ -80,7 +74,7 @@ public class BookController {
             @NotBlank(message = "Book id cannot be blank") String bookId,
             @Valid @RequestBody BookChangeStatusRequest request
     ) {
-        BookChangeStatusCommand command = BOOK_CHANGE_STATUS_REQUEST_TO_BOOK_CHANGE_STATUS_COMMAND_MAPPER.map(request, bookId);
+        BookChangeStatusCommand command = bookRequestMapper.toChangeStatusCommand(request, bookId);
         bookService.changeStatus(command);
         return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Book status changed successfully");
     }
@@ -91,7 +85,7 @@ public class BookController {
             @PathVariable
             @NotBlank(message = "Book id cannot be blank") String bookId,
             @Valid @RequestBody BookAddAuthorRequest request) {
-        BookAddAuthorCommand command = BOOK_ADD_AUTHOR_REQUEST_TO_ADD_AUTHOR_TO_BOOK_COMMAND_MAPPER.map(request, bookId);
+        BookAddAuthorCommand command = bookRequestMapper.toAddAuthorCommand(request, bookId);
         bookService.addAuthorToBook(command);
         return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Author added to book successfully");
     }
@@ -103,7 +97,7 @@ public class BookController {
             @NotBlank(message = "Book id cannot be blank") String bookId,
             @Valid @RequestBody BookRemoveAuthorRequest request
     ) {
-        BookRemoveAuthorCommand command = BOOK_REMOVE_AUTHOR_REQUEST_TO_BOOK_REMOVE_AUTHOR_COMMAND_MAPPER.map(request, bookId);
+        BookRemoveAuthorCommand command = bookRequestMapper.toRemoveAuthorCommand(request, bookId);
         bookService.removeAuthorFromBook(command);
         return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Author removed from book successfully");
     }
@@ -115,7 +109,7 @@ public class BookController {
             @NotBlank(message = "Book id cannot be blank") String bookId,
             @Valid @RequestBody BookAddGenreRequest request
     ) {
-        BookAddGenreCommand command = BOOK_ADD_GENRE_REQUEST_TO_BOOK_ADD_GENRE_COMMAND_MAPPER.map(request, bookId);
+        BookAddGenreCommand command = bookRequestMapper.toAddGenreCommand(request, bookId);
         bookService.addGenreToBook(command);
         return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Genre added to book successfully");
     }
@@ -127,7 +121,7 @@ public class BookController {
             @NotBlank(message = "Book id cannot be blank") String bookId,
             @Valid @RequestBody BookRemoveGenreRequest request
     ) {
-        BookRemoveGenreCommand command = BOOK_REMOVE_GENRE_REQUEST_TO_BOOK_REMOVE_GENRE_COMMAND_MAPPER.map(request, bookId);
+        BookRemoveGenreCommand command = bookRequestMapper.toRemoveGenreCommand(request, bookId);
         bookService.removeGenreFromBook(command);
         return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Genre removed from book successfully");
     }
