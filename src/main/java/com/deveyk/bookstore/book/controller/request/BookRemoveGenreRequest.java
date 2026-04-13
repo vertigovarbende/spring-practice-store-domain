@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 import java.util.Set;
 
-public record BookAddGenreRequest(
+public record BookRemoveGenreRequest(
         @NotEmpty(message = "{validation.common.not-empty}")
         @Size(max = 10, message = "{validation.common.size}")
         Set<@NotBlank(message = "{validation.common.not-blank}")
