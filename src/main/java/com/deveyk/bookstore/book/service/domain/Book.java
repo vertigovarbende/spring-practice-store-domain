@@ -4,6 +4,8 @@ import com.deveyk.bookstore.author.service.domain.Author;
 import com.deveyk.bookstore.author.exception.AuthorNotEligibleException;
 import com.deveyk.bookstore.author.exception.AuthorDuplicateException;
 import com.deveyk.bookstore.book.exception.BookGenreNotEligibleException;
+import com.deveyk.bookstore.book.exception.BookStatusAlreadyChangedException;
+import com.deveyk.bookstore.book.exception.BookStatusNotSuitableForOperationException;
 import com.deveyk.bookstore.book.model.enums.BookGenre;
 import com.deveyk.bookstore.book.model.enums.BookStatus;
 import lombok.*;
@@ -36,8 +38,7 @@ public class Book {
     private String category;
     private BookStatus status;
 
-    // Helper Methods
-
+    // Author methods
     /*
         - we can't add the same author twice
         - we can't add the author which is INACTIVE, SUSPENDED or any other status - look at AuthorStatus
@@ -86,23 +87,38 @@ public class Book {
         }
     }
 
+    public void removeAuthor(Set<Author> authors) {
+        Objects.requireNonNull(authors, "authors cannot be null");
+        authors.forEach(this::removeAuthor);
+    }
+
+    // Genre methods
     /*
         - we can't add the same genre twice
-        - we can't add the genre which is not found
+        - we can't remove the genre which is not associated with the book
      */
     public void addGenre(BookGenre genre) {
-        Objects.requireNonNull(genre, "Genre cannot be null");
+        Objects.requireNonNull(genre, "genre cannot be null");
 
-        if (!this.genres.add(genre)) {
-            throw new BookGenreNotEligibleException(
-                    "Book already contains genre: " + genre.name()
-            );
-        }
+        validateDuplicateGenre(genre);
+
+        this.genres.add(genre);
     }
 
     public void addGenre(Set<BookGenre> genres) {
-        Objects.requireNonNull(genres, "Genres cannot be null");
+        Objects.requireNonNull(genres, "genres cannot be null");
         genres.forEach(this::addGenre);
+    }
+
+    private void validateDuplicateGenre(BookGenre candidate) {
+        boolean alreadyExists = this.genres.stream()
+                .anyMatch(existing -> existing == candidate);
+
+        if (alreadyExists) {
+            throw new BookGenreNotEligibleException(
+                    "Genre is already added to this book"
+            );
+        }
     }
 
     public void removeGenre(BookGenre genre) {
@@ -115,24 +131,55 @@ public class Book {
         }
     }
 
-    public boolean isAvailable() {
-        return this.status == BookStatus.AVAILABLE;
+    public void removeGenre(Set<BookGenre> genres) {
+        Objects.requireNonNull(genres, "genres cannot be null");
+        genres.forEach(this::removeGenre);
     }
 
-    public boolean isOutOfStock() {
-        return this.status == BookStatus.OUT_OF_STOCK;
+    // Status methods
+    /*
+        - only UNAVAILABLE books can be marked as DELETED
+        - only DELETED books can be restored
+        - book status cannot be changed from AVAILABLE to DELETED
+        - book status cannot be changed from DELETED to AVAILABLE
+     */
+    public void markAsDeleted() {
+        if (this.status == BookStatus.DELETED)
+            throw new BookStatusAlreadyChangedException(
+                    "Book is already in DELETED status"
+            );
+
+        if (this.status != BookStatus.UNAVAILABLE)
+            throw new BookStatusNotSuitableForOperationException(
+                    "Only UNAVAILABLE books can be marked as DELETED"
+            );
+        this.status = BookStatus.DELETED;
     }
 
-    public boolean hasValidIsbn10() {
-        return this.isbn10 != null && this.isbn10.length() == 10;
+    public void restore() {
+        if (this.status != BookStatus.DELETED)
+            throw new BookStatusNotSuitableForOperationException(
+                    "Only DELETED books can be restored"
+            );
+        this.status = BookStatus.UNAVAILABLE;
     }
 
-    public boolean hasValidIsbn13() {
-        return this.isbn13 != null && this.isbn13.length() == 13;
+    public void changeStatus(BookStatus targetStatus) {
+        Objects.requireNonNull(targetStatus, "Target status cannot be null");
+        if (this.status == targetStatus)
+            throw new BookStatusAlreadyChangedException(
+                    "Book is already in " + targetStatus.name() + " status"
+            );
+
+        if (!isChangeStatusTransitionAllowed(targetStatus))
+            throw new BookStatusNotSuitableForOperationException(
+                    "Book status cannot be changed from " + this.status.name() + " to " + targetStatus.name()
+            );
+        this.status = targetStatus;
     }
 
-    public boolean hasIsbn() {
-        return hasValidIsbn10() || hasValidIsbn13();
+    private boolean isChangeStatusTransitionAllowed(BookStatus targetStatus) {
+        return this.status.canTransitionTo(targetStatus);
     }
 
 }
