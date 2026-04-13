@@ -1,10 +1,8 @@
 package com.deveyk.bookstore.book.service;
 
 import com.deveyk.bookstore.book.controller.request.BookAddGenreRequest;
-import com.deveyk.bookstore.book.service.command.AddAuthorToBookCommand;
-import com.deveyk.bookstore.book.service.command.BookCreateCommand;
+import com.deveyk.bookstore.book.service.command.*;
 import com.deveyk.bookstore.book.service.domain.Book;
-import com.deveyk.bookstore.book.service.command.BookSearchCommand;
 import com.deveyk.bookstore.common.model.BsPage;
 
 public interface IBookService {
@@ -15,14 +13,18 @@ public interface IBookService {
 
     void create(BookCreateCommand command);
 
-    // void addAuthorToBook(String bookId, BookAddAuthorRequest request);
+    void delete(String bookId);
 
-    void addAuthorToBook(String bookId, AddAuthorToBookCommand command);
+    void restore(String bookId);
 
-    void removeAuthorFromBook(String bookId, String authorId);
+    void changeStatus(BookChangeStatusCommand command);
 
-    void addGenreToBook(String bookId, BookAddGenreRequest request);
+    void addAuthorToBook(BookAddAuthorCommand command);
 
-    void removeGenreFromBook(String bookId, BookAddGenreRequest request);
+    void addGenreToBook(BookAddGenreCommand command);
+
+    void removeAuthorFromBook(BookRemoveAuthorCommand command);
+
+    void removeGenreFromBook(BookRemoveGenreCommand command);
 
 }

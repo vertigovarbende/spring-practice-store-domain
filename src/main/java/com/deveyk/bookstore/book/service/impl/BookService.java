@@ -10,17 +10,12 @@ import com.deveyk.bookstore.book.controller.request.BookAddGenreRequest;
 import com.deveyk.bookstore.book.exception.BookNotFoundException;
 import com.deveyk.bookstore.book.model.enums.BookGenre;
 import com.deveyk.bookstore.book.model.enums.BookSearchType;
-import com.deveyk.bookstore.book.model.mapper.AddAuthorToBookCommandToDomainMapper;
-import com.deveyk.bookstore.book.model.mapper.BookCreateCommandToDomainMapper;
-import com.deveyk.bookstore.book.model.mapper.BookDomainToEntityMapper;
-import com.deveyk.bookstore.book.model.mapper.BookEntityToDomainMapper;
+import com.deveyk.bookstore.book.model.mapper.*;
 import com.deveyk.bookstore.book.repository.BookRepository;
 import com.deveyk.bookstore.book.repository.entity.BookEntity;
 import com.deveyk.bookstore.book.service.IBookService;
-import com.deveyk.bookstore.book.service.command.AddAuthorToBookCommand;
-import com.deveyk.bookstore.book.service.command.BookCreateCommand;
+import com.deveyk.bookstore.book.service.command.*;
 import com.deveyk.bookstore.book.service.domain.Book;
-import com.deveyk.bookstore.book.service.command.BookSearchCommand;
 import com.deveyk.bookstore.book.service.strategy.SearchStrategy;
 import com.deveyk.bookstore.book.service.strategy.context.BookSearchContext;
 import com.deveyk.bookstore.common.model.BsPage;
@@ -47,7 +42,6 @@ public class BookService implements IBookService {
     private final AuthorRepository authorRepository;
     private final BookSearchContext bookSearchContext;
 
-    private static final AddAuthorToBookCommandToDomainMapper ADD_AUTHOR_TO_BOOK_COMMAND_TO_DOMAIN_MAPPER = AddAuthorToBookCommandToDomainMapper.INSTANCE;
     private static final BookCreateCommandToDomainMapper BOOK_CREATE_COMMAND_TO_DOMAIN_MAPPER = BookCreateCommandToDomainMapper.INSTANCE;
     private static final BookEntityToDomainMapper BOOK_ENTITY_TO_DOMAIN_MAPPER = BookEntityToDomainMapper.INSTANCE;
     private static final BookDomainToEntityMapper BOOK_DOMAIN_TO_ENTITY_MAPPER = BookDomainToEntityMapper.INSTANCE;
@@ -102,51 +96,34 @@ public class BookService implements IBookService {
         bookRepository.save(bookEntity);
     }
 
-
-    /*
     @Override
     @Transactional
-    public void addAuthorToBook(String bookId, BookAddAuthorRequest request) {
-
-        AuthorEntity authorEntity = this.returnExistingOfAuthor(request.authorId());
-        Author author = AUTHOR_ENTITY_TO_DOMAIN_MAPPER.map(authorEntity);
-
-        BookEntity bookEntity = this.returnExistingOfBook(bookId);
+    public void delete(String bookId) {
+        BookEntity bookEntity = this.getBookEntity(bookId);
         Book book = BOOK_ENTITY_TO_DOMAIN_MAPPER.map(bookEntity);
-
-        book.addAuthor(author);
-
+        book.markAsDeleted();
         BookEntity updatedBookEntity = BOOK_DOMAIN_TO_ENTITY_MAPPER.map(book);
         bookRepository.save(updatedBookEntity);
     }
-     */
 
-
-    @Override
     @Transactional
-    public void addAuthorToBook(String bookId, AddAuthorToBookCommand command) {
+    public void restore(String bookId) {
         BookEntity bookEntity = this.getBookEntity(bookId);
         Book book = BOOK_ENTITY_TO_DOMAIN_MAPPER.map(bookEntity);
-
-        AuthorEntity authorEntity = this.getAuthorEntity(command.authorId());
-        Author author = AUTHOR_ENTITY_TO_DOMAIN_MAPPER.map(authorEntity);
-
-        book.addAuthor(author);
-
+        book.restore();
         BookEntity updatedBookEntity = BOOK_DOMAIN_TO_ENTITY_MAPPER.map(book);
         bookRepository.save(updatedBookEntity);
     }
 
     @Override
     @Transactional
-    public void removeAuthorFromBook(String bookId, String authorId) {
-        BookEntity bookEntity = this.getBookEntity(bookId);
+    public void changeStatus(BookChangeStatusCommand command) {
+        Objects.requireNonNull(command, "BookChangeStatusCommand cannot be null");
+
+        BookEntity bookEntity = getBookEntity(command.bookId());
         Book book = BOOK_ENTITY_TO_DOMAIN_MAPPER.map(bookEntity);
 
-        AuthorEntity authorEntity = this.getAuthorEntity(authorId);
-        Author author = AUTHOR_ENTITY_TO_DOMAIN_MAPPER.map(authorEntity);
-
-        book.removeAuthor(author);
+        book.changeStatus(command.targetStatus());
 
         BookEntity updatedBookEntity = BOOK_DOMAIN_TO_ENTITY_MAPPER.map(book);
         bookRepository.save(updatedBookEntity);
@@ -154,28 +131,71 @@ public class BookService implements IBookService {
 
     @Override
     @Transactional
-    public void addGenreToBook(String bookId, BookAddGenreRequest request) {
-        BookEntity bookEntity = this.getBookEntity(bookId);
+    public void addAuthorToBook(BookAddAuthorCommand command) {
+        Objects.requireNonNull(command, "BookAddAuthorCommand cannot be null");
+
+        BookEntity bookEntity = this.getBookEntity(command.bookId());
         Book book = BOOK_ENTITY_TO_DOMAIN_MAPPER.map(bookEntity);
 
-        BookGenre bookGenre = BookGenre.from(request.genre());
+        Set<Author> authors = this.getAuthorEntity(command.authorIds()).stream()
+                .map(AUTHOR_ENTITY_TO_DOMAIN_MAPPER::map)
+                .collect(Collectors.toSet());
 
-        book.addGenre(bookGenre);
+        book.addAuthor(authors);
 
         BookEntity updatedBookEntity = BOOK_DOMAIN_TO_ENTITY_MAPPER.map(book);
         bookRepository.save(updatedBookEntity);
     }
 
-    // i am gonna change the parameter - BookAddGenreRequest request
     @Override
     @Transactional
-    public void removeGenreFromBook(String bookId, BookAddGenreRequest request) {
-        BookEntity bookEntity = this.getBookEntity(bookId);
+    public void removeAuthorFromBook(BookRemoveAuthorCommand command) {
+        Objects.requireNonNull(command, "BookRemoveAuthorCommand cannot be null");
+
+        BookEntity bookEntity = this.getBookEntity(command.bookId());
         Book book = BOOK_ENTITY_TO_DOMAIN_MAPPER.map(bookEntity);
 
-        BookGenre bookGenre = BookGenre.from(request.genre());
+        Set<Author> authors = this.getAuthorEntity(command.authorIds()).stream()
+                .map(AUTHOR_ENTITY_TO_DOMAIN_MAPPER::map)
+                .collect(Collectors.toSet());
 
-        book.removeGenre(bookGenre);
+        book.removeAuthor(authors);
+
+        BookEntity updatedBookEntity = BOOK_DOMAIN_TO_ENTITY_MAPPER.map(book);
+        bookRepository.save(updatedBookEntity);
+    }
+
+    @Override
+    @Transactional
+    public void addGenreToBook(BookAddGenreCommand command) {
+        Objects.requireNonNull(command, "BookAddGenreCommand cannot be null");
+
+        BookEntity bookEntity = this.getBookEntity(command.bookId());
+        Book book = BOOK_ENTITY_TO_DOMAIN_MAPPER.map(bookEntity);
+
+        Set<BookGenre> genres = command.genres().stream()
+                .map(BookGenre::from)
+                .collect(Collectors.toSet());
+
+        book.addGenre(genres);
+
+        BookEntity updatedBookEntity = BOOK_DOMAIN_TO_ENTITY_MAPPER.map(book);
+        bookRepository.save(updatedBookEntity);
+    }
+
+    @Override
+    @Transactional
+    public void removeGenreFromBook(BookRemoveGenreCommand command) {
+        Objects.requireNonNull(command, "BookRemoveGenreCommand cannot be null");
+
+        BookEntity bookEntity = this.getBookEntity(command.bookId());
+        Book book = BOOK_ENTITY_TO_DOMAIN_MAPPER.map(bookEntity);
+
+        Set<BookGenre> genres = command.genres().stream()
+                .map(BookGenre::from)
+                .collect(Collectors.toSet());
+
+        book.removeGenre(genres);
 
         BookEntity updatedBookEntity = BOOK_DOMAIN_TO_ENTITY_MAPPER.map(book);
         bookRepository.save(updatedBookEntity);
