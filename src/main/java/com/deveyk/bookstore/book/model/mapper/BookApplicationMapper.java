@@ -1,21 +1,20 @@
 package com.deveyk.bookstore.book.model.mapper;
 
+import com.deveyk.bookstore.book.repository.entity.BookEntity;
 import com.deveyk.bookstore.book.service.command.BookCreateCommand;
 import com.deveyk.bookstore.book.service.domain.Book;
-import com.deveyk.bookstore.common.model.mapper.BaseMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
-public interface BookCreateCommandToDomainMapper extends BaseMapper<BookCreateCommand, Book> {
+public interface BookApplicationMapper {
 
-    BookCreateCommandToDomainMapper INSTANCE = Mappers.getMapper(BookCreateCommandToDomainMapper.class);
-
-    @Override
     @Mapping(target = "genres", ignore = true)
     @Mapping(target = "authors", ignore = true)
-    Book map(BookCreateCommand command);
+    Book toDomain(BookCreateCommand command);
 
+    Book toDomain(BookEntity entity);
+
+    BookEntity toEntity(Book book);
 
 }
