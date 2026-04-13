@@ -57,10 +57,18 @@ CREATE TABLE IF NOT EXISTS BS_BOOK_AUTHORS
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by VARCHAR(255),
 
-    PRIMARY KEY (book_id, author_id),
+    -- Primary key constraint
+    CONSTRAINT pk_bs_book_authors PRIMARY KEY (book_id, author_id),
 
-    FOREIGN KEY (book_id) REFERENCES BS_BOOKS (id),
-    FOREIGN KEY (author_id) REFERENCES BS_AUTHORS (id)
+    -- Foreign key constraints
+    CONSTRAINT fk_bs_book_authors_book
+        FOREIGN KEY (book_id)
+            REFERENCES BS_BOOKS (id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_bs_book_authors_author
+        FOREIGN KEY (author_id)
+            REFERENCES BS_AUTHORS (id)
 );
 
 
@@ -83,8 +91,14 @@ CREATE TABLE IF NOT EXISTS BS_BOOK_GENRES
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by VARCHAR(255),
 
+    -- Primary key constraint
     CONSTRAINT pk_bs_book_genres PRIMARY KEY (book_id, genre),
-    CONSTRAINT fk_bs_book_genres_book FOREIGN KEY (book_id) REFERENCES BS_BOOKS (id)
+
+    -- Foreign key constraints
+    CONSTRAINT fk_bs_book_genres_book
+        FOREIGN KEY (book_id)
+            REFERENCES BS_BOOKS (id)
+            ON DELETE CASCADE
 );
 
 -- BS_BOOKS
