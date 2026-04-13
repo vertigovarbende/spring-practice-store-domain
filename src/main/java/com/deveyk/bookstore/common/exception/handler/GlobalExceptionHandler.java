@@ -2,10 +2,7 @@ package com.deveyk.bookstore.common.exception.handler;
 
 import com.deveyk.bookstore.common.controller.response.BaseResponse;
 import com.deveyk.bookstore.common.controller.response.ErrorResponse;
-import com.deveyk.bookstore.common.exception.BsAlreadyExistsException;
-import com.deveyk.bookstore.common.exception.BsDuplicateException;
-import com.deveyk.bookstore.common.exception.BsNotEligibleException;
-import com.deveyk.bookstore.common.exception.BsNotFoundException;
+import com.deveyk.bookstore.common.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +48,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 response));
     }
 
+    // refactor this method!
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers,
@@ -150,6 +148,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         response.addProperty("traceId", MDC.get("traceId"));
         response.addProperty("method", request.getMethod());
 
+        return ResponseEntity.badRequest().body(BaseResponse.of(
+                HttpStatus.CONFLICT,
+                false,
+                ex.getMessage(),
+                response));
+    }
+
+    @ExceptionHandler(BsStatusOperationsException.class)
+    public ResponseEntity<Object> handleBsStatusOperationsException(final BsStatusOperationsException ex,
+                                                                 HttpServletRequest request) {
+        log.error(ex.getMessage(), ex);
+        ErrorResponse response = ErrorResponse.builder()
+                .header(ErrorResponse.Header.CONFLICT_ERROR.name())
+                .title("Status Operation Failed")
+                .path(request.getRequestURI())
+                .build();
+        response.addProperty("traceId", MDC.get("traceId"));
+        response.addProperty("method", request.getMethod());
         return ResponseEntity.badRequest().body(BaseResponse.of(
                 HttpStatus.CONFLICT,
                 false,
