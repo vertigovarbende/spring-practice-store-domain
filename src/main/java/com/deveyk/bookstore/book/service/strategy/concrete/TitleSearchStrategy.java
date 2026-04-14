@@ -1,7 +1,7 @@
 package com.deveyk.bookstore.book.service.strategy.concrete;
 
 import com.deveyk.bookstore.book.model.enums.BookSearchType;
-import com.deveyk.bookstore.book.model.mapper.BookEntityToDomainMapper;
+import com.deveyk.bookstore.book.model.mapper.BookApplicationMapper;
 import com.deveyk.bookstore.book.repository.BookRepository;
 import com.deveyk.bookstore.book.repository.entity.BookEntity;
 import com.deveyk.bookstore.book.service.strategy.AbstractBookSearchStrategy;
@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class TitleSearchStrategy extends AbstractBookSearchStrategy {
 
-    public TitleSearchStrategy(BookRepository repository, BookEntityToDomainMapper bookEntityToDomainMapper) {
-        super(repository, bookEntityToDomainMapper);
+    public TitleSearchStrategy(BookRepository repository, BookApplicationMapper mapper) {
+        super(repository, mapper);
     }
 
     @Override

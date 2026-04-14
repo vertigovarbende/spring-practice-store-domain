@@ -1,6 +1,6 @@
 package com.deveyk.bookstore.book.service.strategy;
 
-import com.deveyk.bookstore.book.model.mapper.BookEntityToDomainMapper;
+import com.deveyk.bookstore.book.model.mapper.BookApplicationMapper;
 import com.deveyk.bookstore.book.repository.BookRepository;
 import com.deveyk.bookstore.book.repository.entity.BookEntity;
 import com.deveyk.bookstore.book.service.command.BookSearchCommand;
@@ -13,7 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 public abstract class AbstractBookSearchStrategy implements SearchStrategy {
 
     protected final BookRepository repository;
-    protected final BookEntityToDomainMapper bookEntityToDomainMapper;
+    protected final BookApplicationMapper bookApplicationMapper;
 
     @Override
     public Page<Book> search(BookSearchCommand command) {
@@ -34,7 +34,7 @@ public abstract class AbstractBookSearchStrategy implements SearchStrategy {
         Specification<BookEntity> finalSpec = commonSpec.and(specificSpec);
 
         return repository.findAll(finalSpec, command.toPageable())
-                .map(bookEntityToDomainMapper::map);
+                .map(bookApplicationMapper::toDomain);
     }
 
     protected abstract Specification<BookEntity> buildSpecification(String term);
