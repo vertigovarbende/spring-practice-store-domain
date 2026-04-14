@@ -23,9 +23,8 @@ import org.springframework.web.bind.annotation.*;
 public class BookController {
 
     private final IBookService bookService;
-
-    private static final BookToBookResponseMapper BOOK_TO_BOOK_RESPONSE_MAPPER = BookToBookResponseMapper.INSTANCE;
     private final BookRequestMapper bookRequestMapper;
+    private final BookResponseMapper bookResponseMapper;
 
     // GET - /api/v1/books/search - search() - first try for search strategy
     // refactor dto - request and response
@@ -38,7 +37,7 @@ public class BookController {
         BsPageResponse<BookSearchResponse> pageResponse = BsPageResponse.<BookSearchResponse>builder()
                 .content(bookPage.getContent()
                         .stream()
-                        .map(BOOK_TO_BOOK_RESPONSE_MAPPER::map)
+                        .map(bookResponseMapper::toSearchResponse)
                         .toList())
                 .page(bookPage)
                 .build();
@@ -91,6 +90,7 @@ public class BookController {
     }
 
     // DELETE - /api/v1/books/{bookId}/authors
+    // HİÇ AUTHOR'I KALMAYAN BOOK DELETED OLARAK MARKLANMALI MI?
     @DeleteMapping("/{bookId}/authors")
     public BaseResponse<Void> removeAuthorFromBook(
             @PathVariable
