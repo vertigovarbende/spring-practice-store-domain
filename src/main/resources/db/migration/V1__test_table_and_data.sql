@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS BS_BOOKS (
     page_count      INT,
     category        VARCHAR(255),
     status          VARCHAR(255) NOT NULL CHECK ( status IN
-                                                  ('AVAILABLE', 'UNAVAILABLE', 'SOLD_OUT', 'OUT_OF_STOCK', 'SOLD_OUT_AND_CANCELLED', 'CANCELLED')),
+                                                  ('AVAILABLE', 'UNAVAILABLE', 'DELETED')),
 
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by      VARCHAR(255),
