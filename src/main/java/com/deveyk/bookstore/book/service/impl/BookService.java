@@ -102,6 +102,14 @@ public class BookService implements IBookService {
         bookRepository.save(updatedBookEntity);
     }
 
+    // refactor this method - only DELETED books should be deleted permanently
+    @Override
+    @Transactional
+    public void hardDelete(String bookId) {
+        BookEntity bookEntity = this.getBookEntity(bookId);
+        bookRepository.delete(bookEntity);
+    }
+
     @Transactional
     public void restore(String bookId) {
         BookEntity bookEntity = this.getBookEntity(bookId);

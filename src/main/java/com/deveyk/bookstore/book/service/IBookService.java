@@ -1,6 +1,5 @@
 package com.deveyk.bookstore.book.service;
 
-import com.deveyk.bookstore.book.controller.request.BookAddGenreRequest;
 import com.deveyk.bookstore.book.service.command.*;
 import com.deveyk.bookstore.book.service.domain.Book;
 import com.deveyk.bookstore.common.model.BsPage;
@@ -14,6 +13,8 @@ public interface IBookService {
     void create(BookCreateCommand command);
 
     void delete(String bookId);
+
+    void hardDelete(String bookId);
 
     void restore(String bookId);
 
