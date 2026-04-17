@@ -59,6 +59,13 @@ public class BookController {
         return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Book deleted successfully");
     }
 
+    // DELETE - /api/v1/books/{bookId}/hard - not for all roles
+    @DeleteMapping("/{bookId}/hard")
+    public BaseResponse<Void> hardDelete(@PathVariable @NotBlank(message = "Book id cannot be blank") String bookId) {
+        bookService.hardDelete(bookId);
+        return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Book permanently deleted");
+    }
+
     // PATCH - /api/v1/books/{bookId}/restore
     @PatchMapping("/{bookId}/restore")
     public BaseResponse<Void> restore(@PathVariable String bookId) {
