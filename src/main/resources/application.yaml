@@ -13,6 +13,7 @@ spring:
       hibernate:
         default_schema: public
         jdbc.time_zone: UTC
+    open-in-view: false
   flyway:
     locations: classpath:db/migration
 
