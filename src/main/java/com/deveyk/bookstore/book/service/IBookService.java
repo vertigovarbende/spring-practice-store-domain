@@ -16,6 +16,8 @@ public interface IBookService {
 
     void hardDelete(String bookId);
 
+    void updateMetadata(BookUpdateMetadataCommand command);
+
     void restore(String bookId);
 
     void changeStatus(BookChangeStatusCommand command);

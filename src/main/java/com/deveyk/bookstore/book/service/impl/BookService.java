@@ -14,6 +14,7 @@ import com.deveyk.bookstore.book.repository.entity.BookEntity;
 import com.deveyk.bookstore.book.service.IBookService;
 import com.deveyk.bookstore.book.service.command.*;
 import com.deveyk.bookstore.book.service.domain.Book;
+import com.deveyk.bookstore.book.service.domain.BookMetadata;
 import com.deveyk.bookstore.book.service.strategy.SearchStrategy;
 import com.deveyk.bookstore.book.service.strategy.context.BookSearchContext;
 import com.deveyk.bookstore.common.model.BsPage;
@@ -94,6 +95,27 @@ public class BookService implements IBookService {
 
     @Override
     @Transactional
+    public void updateMetadata(BookUpdateMetadataCommand command) {
+        Objects.requireNonNull(command, "BookUpdateMetadataCommand cannot be null");
+
+        BookEntity bookEntity = getBookEntity(command.bookId());
+        Book book = bookApplicationMapper.toDomain(bookEntity);
+
+        BookMetadata metadata = BookMetadata.builder()
+                .title(command.title())
+                .publicationDate(command.publicationDate())
+                .edition(command.edition())
+                .language(command.language())
+                .pageCount(command.pageCount())
+                .build();
+
+        book.updateMetadata(metadata);
+        BookEntity updatedBookEntity = bookApplicationMapper.toEntity(book);
+        bookRepository.save(updatedBookEntity);
+    }
+
+    @Override
+    @Transactional
     public void delete(String bookId) {
         BookEntity bookEntity = this.getBookEntity(bookId);
         Book book = bookApplicationMapper.toDomain(bookEntity);
@@ -107,6 +129,10 @@ public class BookService implements IBookService {
     @Transactional
     public void hardDelete(String bookId) {
         BookEntity bookEntity = this.getBookEntity(bookId);
+        Book book = bookApplicationMapper.toDomain(bookEntity);
+
+        book.validateHardDeleteAllowed();
+
         bookRepository.delete(bookEntity);
     }
 
