@@ -156,6 +156,14 @@ public class Book {
         this.status = BookStatus.DELETED;
     }
 
+    public void validateHardDeleteAllowed() {
+        if (this.status != BookStatus.DELETED) {
+            throw new BookStatusNotSuitableForOperationException(
+                    "Only DELETED books can be permanently deleted"
+            );
+        }
+    }
+
     public void restore() {
         if (this.status != BookStatus.DELETED)
             throw new BookStatusNotSuitableForOperationException(
@@ -180,6 +188,35 @@ public class Book {
 
     private boolean isChangeStatusTransitionAllowed(BookStatus targetStatus) {
         return this.status.canTransitionTo(targetStatus);
+    }
+
+    // Update methods
+    /*
+        - only 'UNAVAILABLE' books can be updated
+        - 'DELETED' books cannot be updated
+        - 'AVAILABLE' books cannot be updated
+     */
+    public void updateMetadata(BookMetadata metadata) {
+        Objects.requireNonNull(metadata, "Book metadata cannot be null");
+
+        validateMetadataUpdatable();
+        applyMetadata(metadata);
+    }
+
+    private void validateMetadataUpdatable() {
+        if (this.status != BookStatus.UNAVAILABLE) {
+            throw new BookStatusNotSuitableForOperationException(
+                    "Book metadata can only be updated when status is UNAVAILABLE"
+            );
+        }
+    }
+
+    private void applyMetadata(BookMetadata metadata) {
+        this.title = metadata.title();
+        this.publicationDate = metadata.publicationDate();
+        this.edition = metadata.edition();
+        this.language = metadata.language();
+        this.pageCount = metadata.pageCount();
     }
 
 }
