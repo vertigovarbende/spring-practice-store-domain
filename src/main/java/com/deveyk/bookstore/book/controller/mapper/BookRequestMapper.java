@@ -14,6 +14,9 @@ public interface BookRequestMapper {
     // BookSearchRequest -> BookSearchCommand
     BookSearchCommand toSearchCommand(BookSearchRequest request);
 
+    // BookUpdateMetadataRequest -> BookUpdateMetadataCommand
+    BookUpdateMetadataCommand toUpdateMetadataCommand(BookUpdateMetadataRequest request, String bookId);
+
     // BookAddAuthorRequest -> BookAddAuthorCommand
     @Mapping(target = "bookId", source = "bookId")
     @Mapping(target = "authorIds", source = "request.authorIds")

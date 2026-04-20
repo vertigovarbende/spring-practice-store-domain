@@ -26,6 +26,14 @@ public class BookController {
     private final BookRequestMapper bookRequestMapper;
     private final BookResponseMapper bookResponseMapper;
 
+    // POST - /api/v1/books - create()
+    @PostMapping
+    public BaseResponse<Void> create(@Valid @RequestBody BookCreateRequest request) {
+        BookCreateCommand command = bookRequestMapper.toCreateCommand(request);
+        bookService.create(command);
+        return BaseResponse.successOf(HttpStatus.CREATED, "Book created successfully");
+    }
+
     // GET - /api/v1/books/search - search() - first try for search strategy
     // refactor dto - request and response
     @GetMapping("/search")
@@ -44,12 +52,15 @@ public class BookController {
         return BaseResponse.successOf(pageResponse);
     }
 
-    // POST - /api/v1/books - create()
-    @PostMapping
-    public BaseResponse<Void> create(@Valid @RequestBody BookCreateRequest request) {
-        BookCreateCommand command = bookRequestMapper.toCreateCommand(request);
-        bookService.create(command);
-        return BaseResponse.successOf(HttpStatus.CREATED, "Book created successfully");
+    // PUT - /api/v1/books/{bookId}/metadata - updateMetadata()
+    @PutMapping("/{bookId}/metadata")
+    public BaseResponse<Void> updateMetadata(
+            @PathVariable @NotBlank(message = "Book id cannot be blank") String bookId,
+            @Valid @RequestBody BookUpdateMetadataRequest request
+    ) {
+        BookUpdateMetadataCommand command = bookRequestMapper.toUpdateMetadataCommand(request, bookId);
+        bookService.updateMetadata(command);
+        return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Book metadata updated successfully");
     }
 
     // DELETE - /api/v1/books/{bookId}
@@ -132,6 +143,4 @@ public class BookController {
         bookService.removeGenreFromBook(command);
         return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Genre removed from book successfully");
     }
-
-
 }
