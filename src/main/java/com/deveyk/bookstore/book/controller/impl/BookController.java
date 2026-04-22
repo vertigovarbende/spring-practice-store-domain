@@ -70,6 +70,8 @@ public class BookController {
         return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Book deleted successfully");
     }
 
+    // GET - /api/v1/books/deleted
+
     // DELETE - /api/v1/books/{bookId}/hard - not for all roles
     @DeleteMapping("/{bookId}/hard")
     public BaseResponse<Void> hardDelete(@PathVariable @NotBlank(message = "Book id cannot be blank") String bookId) {
