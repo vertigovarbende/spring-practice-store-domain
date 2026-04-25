@@ -25,7 +25,7 @@ public class BookEntity extends BaseEntity {
     @Column(name = "ID")
     private String id;
 
-    @Column(name = "TITLE", nullable = false, length = 500)
+    @Column(name = "TITLE", nullable = false, length = 255)
     private String title;
 
     @Column(name = "ISBN_10", length = 10, unique = true)
@@ -75,7 +75,6 @@ public class BookEntity extends BaseEntity {
     private BookStatus status;
 
     // Methods
-    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
