@@ -42,7 +42,7 @@ public record BookCreateRequest(
         Integer pageCount,
 
         @Size(max = 100, message = "{validation.common.size}")
-        String category,
+        UUID category,
 
         @Size(max = 10, message = "{validation.common.size}")
         Set<UUID> authorIds,
