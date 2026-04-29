@@ -42,4 +42,9 @@ public interface BookRequestMapper {
     @Mapping(target = "targetStatus", source = "request.targetStatus")
     BookChangeStatusCommand toChangeStatusCommand(BookChangeStatusRequest request, String bookId);
 
+    // BookAssignCategoryRequest -> BookAssignCategoryCommand
+    @Mapping(target = "bookId", source = "bookId")
+    @Mapping(target = "categoryId", source = "request.categoryId")
+    BookAssignCategoryCommand toAssignCategoryCommand(BookAssignCategoryRequest request, String bookId);
+
 }
