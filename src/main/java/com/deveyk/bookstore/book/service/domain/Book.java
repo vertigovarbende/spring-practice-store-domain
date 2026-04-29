@@ -8,6 +8,8 @@ import com.deveyk.bookstore.book.exception.BookStatusAlreadyChangedException;
 import com.deveyk.bookstore.book.exception.BookStatusNotSuitableForOperationException;
 import com.deveyk.bookstore.book.model.enums.BookGenre;
 import com.deveyk.bookstore.book.model.enums.BookStatus;
+import com.deveyk.bookstore.category.exception.CategoryNotEligibleException;
+import com.deveyk.bookstore.category.service.domain.Category;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -35,7 +37,7 @@ public class Book {
     private Integer pageCount;
     @Builder.Default
     private Set<BookGenre> genres = new HashSet<>();
-    private String category;
+    private Category category;
     private BookStatus status;
 
     // Author methods
@@ -188,6 +190,27 @@ public class Book {
 
     private boolean isChangeStatusTransitionAllowed(BookStatus targetStatus) {
         return this.status.canTransitionTo(targetStatus);
+    }
+
+    // Category methods
+    public void assignCategory(Category category) {
+        Objects.requireNonNull(category, "Category cannot be null");
+        if (!category.isActiveForBookAssignment()) {
+            throw new CategoryNotEligibleException(
+                    "Category cannot be assigned to the book because status is not ACTIVE"
+            );
+        }
+        this.category = category;
+    }
+
+    public void removeCategory() {
+        if (this.category == null) {
+            throw new CategoryNotEligibleException(
+                    "Category cannot be removed as it is not associated with the book"
+            );
+        }
+        // we might create a new category instance to represent the removal instead of null
+        this.category = null;
     }
 
     // Update methods
