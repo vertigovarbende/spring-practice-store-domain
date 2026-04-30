@@ -14,7 +14,7 @@ public record BookCreateCommand(
         String edition,
         String language,
         Integer pageCount,
-        String category,
+        UUID categoryId,
         Set<UUID> authorIds,
         Set<String> genres
 ) {
