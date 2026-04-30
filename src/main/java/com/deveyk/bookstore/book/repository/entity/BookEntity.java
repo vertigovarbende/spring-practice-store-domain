@@ -3,6 +3,7 @@ package com.deveyk.bookstore.book.repository.entity;
 import com.deveyk.bookstore.author.repository.entity.AuthorEntity;
 import com.deveyk.bookstore.book.model.enums.BookGenre;
 import com.deveyk.bookstore.book.model.enums.BookStatus;
+import com.deveyk.bookstore.category.repository.entity.CategoryEntity;
 import com.deveyk.bookstore.common.repository.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -67,8 +68,9 @@ public class BookEntity extends BaseEntity {
     @Column(name = "GENRE", nullable = false)
     private Set<BookGenre> genres;
 
-    @Column(name = "CATEGORY", length = 100)
-    private String category;        // i am gonna create CategoryEntity
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CATEGORY_ID")
+    private CategoryEntity category;
 
     @Column(name = "STATUS")
     @Enumerated(EnumType.STRING)
