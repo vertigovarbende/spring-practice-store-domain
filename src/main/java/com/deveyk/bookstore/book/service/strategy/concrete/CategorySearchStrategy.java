@@ -5,6 +5,9 @@ import com.deveyk.bookstore.book.model.mapper.BookApplicationMapper;
 import com.deveyk.bookstore.book.repository.BookRepository;
 import com.deveyk.bookstore.book.repository.entity.BookEntity;
 import com.deveyk.bookstore.book.service.strategy.AbstractBookSearchStrategy;
+import com.deveyk.bookstore.category.repository.entity.CategoryEntity;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -15,11 +18,16 @@ public class CategorySearchStrategy extends AbstractBookSearchStrategy {
         super(repository, mapper);
     }
 
-    // i am gonna change it when i create entity for category domain
     @Override
     protected Specification<BookEntity> buildSpecification(String term) {
-        return (root, query, cb) ->
-                cb.like(cb.lower(cb.coalesce(root.get("category"), "")), "%" + term + "%");
+        return (root, query, cb) -> {
+            Join<BookEntity, CategoryEntity> categoryJoin = root.join("category", JoinType.LEFT);
+
+            return cb.like(
+                    cb.lower(cb.coalesce(categoryJoin.get("name"), "")),
+                    "%" + term.toLowerCase() + "%"
+            );
+        };
     }
 
     @Override
