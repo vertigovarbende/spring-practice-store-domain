@@ -145,4 +145,17 @@ public class BookController {
         bookService.removeGenreFromBook(command);
         return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Genre removed from book successfully");
     }
+
+    // PATCH - /api/v1/books/{bookId}/categories
+    @PatchMapping("/{bookId}/categories")
+    public BaseResponse<Void> assignCategoryToBook(
+            @PathVariable
+            @NotBlank(message = "Book id cannot be blank") String bookId,
+            @Valid @RequestBody BookAssignCategoryRequest request
+    ) {
+        BookAssignCategoryCommand command = bookRequestMapper.toAssignCategoryCommand(request, bookId);
+        bookService.assignCategory(command);
+        return BaseResponse.successOf(HttpStatus.NO_CONTENT, "Category assigned to book successfully");
+    }
+
 }
