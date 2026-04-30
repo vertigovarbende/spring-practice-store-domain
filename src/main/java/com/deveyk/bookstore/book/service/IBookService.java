@@ -14,11 +14,11 @@ public interface IBookService {
 
     void delete(String bookId);
 
+    void restore(String bookId);
+
     void hardDelete(String bookId);
 
     void updateMetadata(BookUpdateMetadataCommand command);
-
-    void restore(String bookId);
 
     void changeStatus(BookChangeStatusCommand command);
 
@@ -29,5 +29,7 @@ public interface IBookService {
     void removeAuthorFromBook(BookRemoveAuthorCommand command);
 
     void removeGenreFromBook(BookRemoveGenreCommand command);
+
+    void assignCategory(BookAssignCategoryCommand command);
 
 }

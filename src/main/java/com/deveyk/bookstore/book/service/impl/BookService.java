@@ -5,6 +5,7 @@ import com.deveyk.bookstore.author.model.mapper.AuthorApplicationMapper;
 import com.deveyk.bookstore.author.repository.AuthorRepository;
 import com.deveyk.bookstore.author.repository.entity.AuthorEntity;
 import com.deveyk.bookstore.author.service.domain.Author;
+import com.deveyk.bookstore.book.exception.BookAlreadyExistsException;
 import com.deveyk.bookstore.book.exception.BookNotFoundException;
 import com.deveyk.bookstore.book.model.enums.BookGenre;
 import com.deveyk.bookstore.book.model.enums.BookSearchType;
@@ -17,6 +18,11 @@ import com.deveyk.bookstore.book.service.domain.Book;
 import com.deveyk.bookstore.book.service.domain.BookMetadata;
 import com.deveyk.bookstore.book.service.strategy.SearchStrategy;
 import com.deveyk.bookstore.book.service.strategy.context.BookSearchContext;
+import com.deveyk.bookstore.category.exception.CategoryNotFoundException;
+import com.deveyk.bookstore.category.model.mapper.CategoryApplicationMapper;
+import com.deveyk.bookstore.category.repository.CategoryRepository;
+import com.deveyk.bookstore.category.repository.entity.CategoryEntity;
+import com.deveyk.bookstore.category.service.domain.Category;
 import com.deveyk.bookstore.common.model.BsPage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,12 +43,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BookService implements IBookService {
 
+    // repositories
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
+    private final CategoryRepository categoryRepository;
+    // context
     private final BookSearchContext bookSearchContext;
-    // Mappers
+    // mappers
     private final BookApplicationMapper bookApplicationMapper;
     private final AuthorApplicationMapper authorApplicationMapper;
+    private final CategoryApplicationMapper categoryApplicationMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -70,23 +80,26 @@ public class BookService implements IBookService {
     public void create(BookCreateCommand command) {
         Objects.requireNonNull(command, "BookCreateCommand cannot be null");
         Book book = bookApplicationMapper.toDomain(command);
+        this.checkExistingOfBookTitle(book.getTitle()); // title??
+        // author
         if (command.authorIds() != null && !command.authorIds().isEmpty()) {
-            /*
-            Set<Author> authors = command.authorIds().stream()
-                    .map(authorsId -> getAuthorEntity(authorsId.toString()))
-                    .map(authorApplicationMapper::toDomain)
-                    .collect(Collectors.toSet());
-             */
             Set<Author> authors2 = this.getAuthorEntity(command.authorIds()).stream()
                             .map(authorApplicationMapper::toDomain)
                             .collect(Collectors.toSet());
             book.addAuthor(authors2);
         }
+        // genre
         if (command.genres() != null && !command.genres().isEmpty()) {
             Set<BookGenre> genres = command.genres().stream()
                     .map(BookGenre::from)
                     .collect(Collectors.toSet());
             book.addGenre(genres);
+        }
+        // category
+        if (command.categoryId() != null) {
+            CategoryEntity categoryEntity = this.getCategoryEntity(command.categoryId().toString());
+            Category category = categoryApplicationMapper.toDomain(categoryEntity);
+            book.assignCategory(category);
         }
 
         BookEntity bookEntity = bookApplicationMapper.toEntity(book);
@@ -231,11 +244,36 @@ public class BookService implements IBookService {
         bookRepository.save(updatedBookEntity);
     }
 
+    @Override
+    @Transactional
+    public void assignCategory(BookAssignCategoryCommand command) {
+        Objects.requireNonNull(command, "BookAssignCategoryCommand cannot be null");
+
+        BookEntity bookEntity = this.getBookEntity(command.bookId());
+        Book book = bookApplicationMapper.toDomain(bookEntity);
+
+        CategoryEntity categoryEntity = getCategoryEntity(command.categoryId().toString());
+        Category category = categoryApplicationMapper.toDomain(categoryEntity);
+
+        book.assignCategory(category);
+
+        BookEntity updatedBookEntity = bookApplicationMapper.toEntity(book);
+        bookRepository.save(bookEntity);
+    }
+
+    // BookEntity
     private BookEntity getBookEntity(String bookId) {
         return bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + bookId));
     }
 
+    private void checkExistingOfBookTitle(String title) {
+        boolean isBookExistByTitle = bookRepository.existsByTitleIgnoreCase(title);
+        if (isBookExistByTitle)
+            throw new BookAlreadyExistsException("Book title already exists: " + title);
+    }
+
+    // AuthorEntity
     private AuthorEntity getAuthorEntity(String authorId) {
         return authorRepository.findById(authorId)
                 .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + authorId));
@@ -252,6 +290,12 @@ public class BookService implements IBookService {
 
         return authorEntities.stream()
                 .collect(Collectors.toSet());
+    }
+
+    // CategoryEntity
+    private CategoryEntity getCategoryEntity(String categoryId) {
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
     }
 
 }
