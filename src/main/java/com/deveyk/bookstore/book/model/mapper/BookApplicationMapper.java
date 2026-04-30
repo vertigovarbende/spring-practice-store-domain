@@ -12,6 +12,7 @@ public interface BookApplicationMapper {
     // BookCreateCommand -> Book
     @Mapping(target = "genres", ignore = true)
     @Mapping(target = "authors", ignore = true)
+    @Mapping(target = "category", ignore = true)
     Book toDomain(BookCreateCommand command);
 
     // BookEntity -> Book
