@@ -6,6 +6,7 @@ import com.deveyk.bookstore.category.model.enums.CategoryStatus;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -22,7 +23,7 @@ public class Category {
                 .id(UUID.randomUUID())
                 .name(name)
                 .description(description)
-                .status(CategoryStatus.ACTIVE)
+                .status(CategoryStatus.INACTIVE)
                 .build();
     }
 
@@ -45,33 +46,48 @@ public class Category {
         }
     }
 
+    // Status methods
+    /*
+    - only INACTIVE categories can be marked as DELETED
+    - only DELETED categories can be restored
+    - category status cannot be changed from ACTIVE to DELETED
+    - category status cannot be changed from DELETED to ACTIVE
+     */
     public void activate() {
-        if (this.status == CategoryStatus.ACTIVE) {
-            throw new CategoryStatusAlreadyChangedException("Category is already ACTIVE");
-        }
-
-        if (this.status == CategoryStatus.DELETED) {
-            throw new CategoryStatusNotSuitableForOperationException("Deleted category cannot be activated");
-        }
-
-        this.status = CategoryStatus.ACTIVE;
+        changeStatus(CategoryStatus.ACTIVE);
     }
 
     public void deactivate() {
-        if (this.status == CategoryStatus.INACTIVE) {
-            throw new CategoryStatusAlreadyChangedException("Category is already INACTIVE");
+        changeStatus(CategoryStatus.INACTIVE);
+    }
+
+    private void changeStatus(CategoryStatus targetStatus) {
+        Objects.requireNonNull(targetStatus, "Target status cannot be null");
+
+        if (this.status == targetStatus) {
+            throw new CategoryStatusAlreadyChangedException(
+                    "Category is already in " + targetStatus.name() + " status"
+            );
         }
 
-        if (this.status == CategoryStatus.DELETED) {
-            throw new CategoryStatusNotSuitableForOperationException("Deleted category cannot be deactivated");
+        if (!this.status.canTransitionTo(targetStatus)) {
+            throw new CategoryStatusNotSuitableForOperationException(
+                    "Category status cannot be changed from " + this.status.name() + " to " + targetStatus.name()
+            );
         }
 
-        this.status = CategoryStatus.INACTIVE;
+        this.status = targetStatus;
     }
 
     public void markAsDeleted() {
         if (this.status == CategoryStatus.DELETED) {
             throw new CategoryStatusAlreadyChangedException("Category is already DELETED");
+        }
+
+        if (this.status != CategoryStatus.INACTIVE) {
+            throw new CategoryStatusNotSuitableForOperationException(
+                    "Only INACTIVE categories can be marked as DELETED"
+            );
         }
 
         this.status = CategoryStatus.DELETED;
