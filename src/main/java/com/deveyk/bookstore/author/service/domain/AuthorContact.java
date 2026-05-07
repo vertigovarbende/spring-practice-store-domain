@@ -4,8 +4,6 @@ import com.deveyk.bookstore.author.model.enums.ContactMethod;
 import lombok.*;
 
 @Getter
-@Setter
-@AllArgsConstructor
 @Builder
 public class AuthorContact {
 
@@ -18,6 +16,38 @@ public class AuthorContact {
     private String agentContact;
     @Builder.Default
     private ContactMethod preferredContactMethod = ContactMethod.EMAIL;
-    private Boolean isAvailableForEvents;
+    @Builder.Default
+    private Boolean isAvailableForEvents = false;
+
+    public boolean hasEmail() {
+        return hasText(this.email);
+    }
+
+    public boolean hasPhone() {
+        return hasText(this.phone);
+    }
+
+    public boolean hasAgentContact() {
+        return hasText(this.agentContact);
+    }
+
+    public boolean hasSocialMediaContact() {
+        return hasText(this.twitterHandle)
+                || hasText(this.instagramHandle)
+                || hasText(this.linkedinUrl);
+    }
+
+    public boolean canBeContactedByPreferredMethod() {
+        return this.preferredContactMethod != null
+                && this.preferredContactMethod.isAvailableFor(this);
+    }
+
+    public boolean isAvailableForEvents() {
+        return Boolean.TRUE.equals(this.isAvailableForEvents);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
 
 }
