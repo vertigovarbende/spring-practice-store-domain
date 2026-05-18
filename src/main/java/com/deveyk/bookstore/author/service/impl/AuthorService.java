@@ -6,10 +6,7 @@ import com.deveyk.bookstore.author.model.mapper.AuthorApplicationMapper;
 import com.deveyk.bookstore.author.repository.AuthorRepository;
 import com.deveyk.bookstore.author.repository.entity.AuthorEntity;
 import com.deveyk.bookstore.author.service.IAuthorService;
-import com.deveyk.bookstore.author.service.command.AuthorChangeStatusCommand;
-import com.deveyk.bookstore.author.service.command.AuthorContactUpdateCommand;
-import com.deveyk.bookstore.author.service.command.AuthorCreateCommand;
-import com.deveyk.bookstore.author.service.command.AuthorNameUpdateCommand;
+import com.deveyk.bookstore.author.service.command.*;
 import com.deveyk.bookstore.author.service.domain.Author;
 import com.deveyk.bookstore.common.model.BsPage;
 import jakarta.transaction.Transactional;
@@ -32,9 +29,9 @@ public class AuthorService implements IAuthorService {
     public void create(AuthorCreateCommand command) {
         Objects.requireNonNull(command, "AuthorCreateCommand cannot be null");
 
-        if (authorRepository.existsByContactEmailIgnoreCase(command.contact().email())) {
+        if (authorRepository.existsByContactEmailIgnoreCase(command.contact().getEmail())) {
             throw new AuthorAlreadyExistsException(
-                    "Author already exists with email: " + command.contact().email()
+                    "Author already exists with email: " + command.contact().getEmail()
             );
         }
 
@@ -45,12 +42,11 @@ public class AuthorService implements IAuthorService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public BsPage<Author> list(AuthorListCommand command) {
         Objects.requireNonNull(command, "AuthorListCommand cannot be null");
 
         Page<AuthorEntity> page = authorRepository.findAll(
-                command.toSpecification(),
+                command.toSpecification(AuthorEntity.class),
                 command.toPageable()
         );
 
@@ -67,7 +63,6 @@ public class AuthorService implements IAuthorService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Author getById(String authorId) {
         return authorApplicationMapper.toDomain(getAuthorEntity(authorId));
     }

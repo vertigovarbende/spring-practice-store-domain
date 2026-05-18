@@ -1,9 +1,6 @@
 package com.deveyk.bookstore.author.service;
 
-import com.deveyk.bookstore.author.service.command.AuthorChangeStatusCommand;
-import com.deveyk.bookstore.author.service.command.AuthorContactUpdateCommand;
-import com.deveyk.bookstore.author.service.command.AuthorCreateCommand;
-import com.deveyk.bookstore.author.service.command.AuthorNameUpdateCommand;
+import com.deveyk.bookstore.author.service.command.*;
 import com.deveyk.bookstore.author.service.domain.Author;
 import com.deveyk.bookstore.common.model.BsPage;
 
